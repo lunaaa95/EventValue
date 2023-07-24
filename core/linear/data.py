@@ -6,6 +6,8 @@ class Data:
     def process_input_data(treated_outcome, control_outcome):
         # treated_outcome: (T, 1)
         # control_outcome: (T, n_control)
+        treated_outcome = treated_outcome / treated_outcome[0]
+        control_outcome = control_outcome / control_outcome[0]
 
         # treated_covariates: (n_covariates, 1)
         treated_covariates = treated_outcome.mean(axis=0, keepdims=True)

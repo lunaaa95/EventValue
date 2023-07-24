@@ -279,6 +279,8 @@ class SynthControl:
                  ):
         # x_treated: (T, 1)
         # x_control: (T, n_control)
+        self.x_treated = x_treated
+        self.x_control = x_control
         x_input = Data.process_input_data(treated_outcome=x_treated, control_outcome=x_control)
 
         # label_treated: (1,)
@@ -298,6 +300,14 @@ class SynthControl:
             data=self.result,
             placebo=False, pen=self.pen, steps=self.n_optim)
         
-        x_synth = self.result.synth_outcome
+        x_synth = self.result.synth_outcome.T * self.x_treated[0]
 
+        return x_synth
+    
+    def sample(self, x_control):
+        # x_control: (T, n_control)
+        x_control = x_control / self.x_control[0]
+        x_synth = self.result.w.T @ x_control.T
+        x_synth = x_synth.T
+        x_synth = x_synth * self.x_treated[0]
         return x_synth
