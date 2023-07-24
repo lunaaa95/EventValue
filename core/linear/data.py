@@ -2,6 +2,13 @@ import numpy as np
 
 
 class Data:
+    def __init__(self, treated_outcome, control_outcome, label_treated, label_control, time) -> None:
+        self.treated_outcome = treated_outcome
+        self.control_outcome = control_outcome
+        self.label_treated = label_treated
+        self.label_control = label_control
+        self.time = time
+
     @staticmethod
     def process_input_data(treated_outcome, control_outcome):
         # treated_outcome: (T, 1)

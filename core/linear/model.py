@@ -1,6 +1,7 @@
 import numpy as np
 from .data import Data
 from .optimize import Optimize
+from .metric import rmse, moving_average
 
 
 class Result:
@@ -32,7 +33,7 @@ class Result:
         self.fail_count = 0
 
         # metric
-        self.rmspe_df = None
+        self.rmse = None
 
         self.in_space_placebo_w = None
         self.in_time_placebo_w = None
@@ -63,16 +64,11 @@ class SynthControl:
                  ):
         # x_treated: (T, 1)
         # x_control: (T, n_control)
-        self.x_treated = x_treated
-        self.x_control = x_control
-        x_input = Data.process_input_data(treated_outcome=x_treated, control_outcome=x_control)
-
         # label_treated: (1,)
         # label_control: (n_control,)
         # time: (T,)
-        self.label_treated = label_treated
-        self.label_control = label_control
-        self.time = time
+        self.data = Data(x_treated, x_control, label_treated, label_control, time)
+        x_input = Data.process_input_data(treated_outcome=x_treated, control_outcome=x_control)
 
         self.result = Result(
             pen=self.pen, random_seed=self.random_seed,
@@ -84,14 +80,27 @@ class SynthControl:
             data=self.result,
             placebo=False, pen=self.pen, steps=self.n_optim)
         
-        x_synth = self.result.synth_outcome.T * self.x_treated[0]
+        # x_synth: (T, 1)
+        x_synth = self.result.synth_outcome * self.data.treated_outcome[0]
+
+        self.result.rmse = rmse(x_treated, x_synth)
 
         return x_synth
     
     def sample(self, x_control):
         # x_control: (T, n_control)
-        x_control = x_control / self.x_control[0]
-        x_synth = self.result.w.T @ x_control.T
-        x_synth = x_synth.T
-        x_synth = x_synth * self.x_treated[0]
+        x_control = x_control / self.data.control_outcome[0]
+
+        # x_synth: (T, 1)
+        x_synth = (self.result.w.T @ x_control.T).T
+        x_synth = x_synth * self.data.treated_outcome[0]
+
         return x_synth
+
+    def band(self, period=24):
+        full = self.data.treated_outcome.squeeze()
+        center = moving_average(full, period)
+        full = full[period//2:-(period//2-1)]
+        std = np.std(full - center)
+        band = std + self.result.rmse
+        return band

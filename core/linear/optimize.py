@@ -159,7 +159,7 @@ class Optimize(object):
                 data.w = w.value
                 data.v = np.diagonal(V) / np.sum(np.diagonal(V)) #Make sure its normailzed (sometimes the optimizers diverge from bounds)
                 data.pen = pen_coef
-                data.synth_outcome = data.w.T @ data.control_outcome.T #Transpose to make it (n_periods x 1)
+                data.synth_outcome = (data.w.T @ data.control_outcome.T).T #Transpose to make it (n_periods x 1)
                 data.synth_covariates = data.control_covariates @ data.w
 
         elif placebo == "in-space":
