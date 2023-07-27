@@ -1,7 +1,8 @@
 import numpy as np
-from .data import Data
+from .data import DataProcess
 from .optimize import Optimize
-from .metric import rmse, moving_average
+from .metric import rmse
+from ..data import Data
 
 
 class Result:
@@ -68,7 +69,7 @@ class SynthControl:
         # label_control: (n_control,)
         # time: (T,)
         self.data = Data(x_treated, x_control, label_treated, label_control, time)
-        x_input = Data.process_input_data(treated_outcome=x_treated, control_outcome=x_control)
+        x_input = DataProcess.process_input_data(treated_outcome=x_treated, control_outcome=x_control)
 
         self.result = Result(
             pen=self.pen, random_seed=self.random_seed,
@@ -81,7 +82,7 @@ class SynthControl:
             placebo=False, pen=self.pen, steps=self.n_optim)
         
         # x_synth: (T, 1)
-        x_synth = self.result.synth_outcome * self.data.treated_outcome[0]
+        x_synth = self.result.synth_outcome * self.data.x_treated[0]
 
         self.result.rmse = rmse(x_treated, x_synth)
 
@@ -89,18 +90,18 @@ class SynthControl:
     
     def sample(self, x_control):
         # x_control: (T, n_control)
-        x_control = x_control / self.data.control_outcome[0]
+        x_control = x_control / self.data.x_control[0]
 
         # x_synth: (T, 1)
         x_synth = (self.result.w.T @ x_control.T).T
-        x_synth = x_synth * self.data.treated_outcome[0]
+        x_synth = x_synth * self.data.x_treated[0]
 
         return x_synth
 
     def band(self, period=24):
-        full = self.data.treated_outcome.squeeze()
-        center = moving_average(full, period)
+        full = self.data.x_treated.squeeze()
+        center = np.convolve(full, np.ones(period)/period, 'valid')
         full = full[period//2:-(period//2-1)]
-        std = np.std(full - center)
-        band = std + self.result.rmse
+        var = np.var(full - center)
+        band = np.sqrt(var + self.result.rmse**2)
         return band

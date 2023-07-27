@@ -1,14 +1,7 @@
 import numpy as np
 
 
-class Data:
-    def __init__(self, treated_outcome, control_outcome, label_treated, label_control, time) -> None:
-        self.treated_outcome = treated_outcome
-        self.control_outcome = control_outcome
-        self.label_treated = label_treated
-        self.label_control = label_control
-        self.time = time
-
+class DataProcess:
     @staticmethod
     def process_input_data(treated_outcome, control_outcome):
         # treated_outcome: (T, 1)
@@ -25,13 +18,13 @@ class Data:
         n_covariates, n_controls = control_covariates.shape
 
         # Rescale covariates to be unit variance (helps with optimization)
-        treated_covariates, control_covariates = Data._rescale_covariate_variance(treated_covariates,
+        treated_covariates, control_covariates = DataProcess._rescale_covariate_variance(treated_covariates,
                                                                             control_covariates,
                                                                             n_covariates)
         
         # Get matrix of unitwise differences between control units to treated unit
         # pairwise_difference: (n_covariates, n_control)
-        pairwise_difference = Data._get_pairwise_difference_matrix(treated_covariates, 
+        pairwise_difference = DataProcess._get_pairwise_difference_matrix(treated_covariates, 
                                                                    control_covariates)
 
         return {

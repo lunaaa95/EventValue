@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 import pandas as pd
+import math
 
 
 def rmse(x, x_pred):
@@ -27,5 +28,3 @@ def pre_post_rmse_ratio(model, test_x, test_x_pred):
     
     return rmse_dict
 
-def moving_average(x, w):
-    return np.convolve(x, np.ones(w), 'valid') / w
