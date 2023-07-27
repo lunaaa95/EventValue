@@ -14,3 +14,10 @@ statsmodels==0.14.0
 torch
 tqdm==4.65.0
 zh-core-web-lg @ https://github.com/explosion/spacy-models/releases/download/zh_core_web_lg-3.5.0/zh_core_web_lg-3.5.0-py3-none-any.whl
+transformers
+gensim
+bertopic
+jieba
+hdbscan
+umap
+sentence_transformers
