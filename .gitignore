@@ -1,5 +1,4 @@
 *.pyc
-*.ipynb
 csmar
 .vscode
 __pycache__
